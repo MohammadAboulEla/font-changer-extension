@@ -3,19 +3,107 @@
 // type: "standard" (system font) or "google" (Google Fonts)
 // ============================================================
 const FONTS = [
+  // System fonts
   { name: "Arial", type: "standard" },
   { name: "Verdana", type: "standard" },
   { name: "Georgia", type: "standard" },
   { name: "Times New Roman", type: "standard" },
   { name: "Courier New", type: "standard" },
+  // Google Fonts
+  { name: "DM Sans", type: "google" },
   { name: "Inter", type: "google" },
+  { name: "Space Mono", type: "google" },
+  { name: "Space Grotesk", type: "google" },
+  { name: "Work Sans", type: "google" },
+  { name: "Syne", type: "google" },
+  { name: "Libre Franklin", type: "google" },
+  { name: "Cormorant", type: "google" },
+  { name: "Fira Sans", type: "google" },
+  { name: "Eczar", type: "google" },
+  { name: "Alegreya Sans", type: "google" },
+  { name: "Alegreya", type: "google" },
+  { name: "Source Sans Pro", type: "google" },
+  { name: "Source Serif Pro", type: "google" },
   { name: "Roboto", type: "google" },
-  { name: "Open Sans", type: "google" },
-  { name: "Lato", type: "google" },
-  { name: "Montserrat", type: "google" },
+  { name: "Fraunces", type: "google" },
+  { name: "Inknut Antiqua", type: "google" },
+  { name: "BioRhyme", type: "google" },
   { name: "Poppins", type: "google" },
+  { name: "Archivo Narrow", type: "google" },
+  { name: "Libre Baskerville", type: "google" },
   { name: "Playfair Display", type: "google" },
-  { name: "Fira Code", type: "google" },
+  { name: "Karla", type: "google" },
+  { name: "Lora", type: "google" },
+  { name: "Proza Libre", type: "google" },
+  { name: "Spectral", type: "google" },
+  { name: "IBM Plex Sans", type: "google" },
+  { name: "Manrope", type: "google" },
+  { name: "Montserrat", type: "google" },
+  { name: "Lato", type: "google" },
+  { name: "PT Sans", type: "google" },
+  { name: "PT Serif", type: "google" },
+  { name: "Cardo", type: "google" },
+  { name: "Chivo", type: "google" },
+  { name: "Neuton", type: "google" },
+  { name: "Rubik", type: "google" },
+  { name: "Open Sans", type: "google" },
+  { name: "Inconsolata", type: "google" },
+  { name: "Raleway", type: "google" },
+  { name: "Merriweather", type: "google" },
+  { name: "Tangerine", type: "google" },
+  { name: "Dancing Script", type: "google" },
+  { name: "Bad Script", type: "google" },
+  { name: "Sacramento", type: "google" },
+  { name: "Barlow Condensed", type: "google" },
+  { name: "Pathway Gothic One", type: "google" },
+  { name: "Fjalla One", type: "google" },
+  { name: "Oswald", type: "google" },
+  { name: "Abril Fatface", type: "google" },
+  { name: "Rozha One", type: "google" },
+  { name: "Ultra", type: "google" },
+  { name: "UnifrakturMaguntia", type: "google" },
+  { name: "UnifrakturCook", type: "google" },
+  { name: "Pirata One", type: "google" },
+  { name: "New Rocker", type: "google" },
+  { name: "Germania One", type: "google" },
+  { name: "Fruktur", type: "google" },
+  { name: "Zilla Slab", type: "google" },
+  { name: "Overpass", type: "google" },
+  { name: "Josefin Sans", type: "google" },
+  { name: "Josefin Slab", type: "google" },
+  { name: "Old Standard TT", type: "google" },
+  { name: "Gentium Basic", type: "google" },
+  { name: "Varela Round", type: "google" },
+  { name: "Rajdhani", type: "google" },
+  { name: "Bitter", type: "google" },
+  { name: "Nunito Sans", type: "google" },
+  { name: "Instrument Sans", type: "google" },
+  { name: "Instrument Serif", type: "google" },
+  { name: "Bricolage Grotesque", type: "google" },
+  { name: "Roboto Serif", type: "google" },
+  { name: "Newsreader", type: "google" },
+  { name: "Plus Jakarta Sans", type: "google" },
+  { name: "Familjen Grotesk", type: "google" },
+  { name: "Azeret Mono", type: "google" },
+  { name: "Spartan", type: "google" },
+  { name: "DM Serif Text", type: "google" },
+  { name: "DM Serif Display", type: "google" },
+  { name: "Literata", type: "google" },
+  { name: "Outfit", type: "google" },
+  { name: "Cairo", type: "google" },
+  { name: "Tajawal", type: "google" },
+  { name: "Almarai", type: "google" },
+  { name: "Amiri", type: "google" },
+  { name: "IBM Plex Sans Arabic", type: "google" },
+  { name: "Noto Sans Arabic", type: "google" },
+  { name: "Noto Naskh Arabic", type: "google" },
+  { name: "Readex Pro", type: "google" },
+  { name: "Changa", type: "google" },
+  { name: "Kufam", type: "google" },
+  { name: "Vazirmatn", type: "google" },
+  { name: "El Messiri", type: "google" },
+  { name: "Alexandria", type: "google" },
+  { name: "Cascadia Code", type: "google" },
 ];
 
 const $ = (s) => document.querySelector(s);
@@ -29,7 +117,7 @@ const googleFonts = FONTS.filter((f) => f.type === "google");
 if (googleFonts.length) {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css?family=" + googleFonts.map((f) => f.name.replace(/\s/g, "+")).join("|") + "&display=swap";
+  link.href = "https://fonts.googleapis.com/css?family=" + googleFonts.map((f) => f.name.replace(/\s/g, "+") + ":300,400,500,600,700,800,900").join("|") + "&display=swap";
   document.head.appendChild(link);
 }
 
@@ -37,7 +125,8 @@ if (googleFonts.length) {
 function populateFonts() {
   const sel = $("#font_family");
   sel.innerHTML = '';
-  FONTS.forEach((f) => {
+  const sortedFonts = [...FONTS].sort((a, b) => a.name.localeCompare(b.name));
+  sortedFonts.forEach((f) => {
     const opt = document.createElement("option");
     opt.value = f.name;
     opt.textContent = f.name;
@@ -48,12 +137,18 @@ function populateFonts() {
 }
 
 // Save styles to storage
+function getHost() {
+  if (!currentTab || !currentTab.url) return "default";
+  const match = currentTab.url.match(/:\/\/(.[^\/]+)/);
+  return match ? match[1] : "default";
+}
+
 function save() {
   chrome.storage.local.get("styles", (data) => {
     const styles = data.styles || {};
     styles.domain_styles = styles.domain_styles || {};
     styles.global_style = styles.global_style || {};
-    const host = currentTab.url.match(/:\/\/(.[^\/]+)/)[1];
+    const host = getHost();
     if (siteStyle.type === "custom") {
       styles.domain_styles[host] = siteStyle;
     } else {
@@ -66,21 +161,22 @@ function save() {
 
 // Send style to content script
 function applyStyle(style) {
+  const styleToApply = style !== undefined ? style : activeStyle();
   if (siteStyle.type === "global") {
     chrome.tabs.query({}, (tabs) => {
       tabs.forEach((t) => {
-        try { chrome.tabs.sendMessage(t.id, { msg: "style", value: style }, () => chrome.runtime.lastError); } catch (e) {}
+        try { chrome.tabs.sendMessage(t.id, { msg: "style", value: styleToApply }, () => chrome.runtime.lastError); } catch (e) {}
       });
     });
-  } else {
-    chrome.tabs.sendMessage(currentTab.id, { msg: "style", value: style }, () => chrome.runtime.lastError);
+  } else if (currentTab && currentTab.id) {
+    chrome.tabs.sendMessage(currentTab.id, { msg: "style", value: styleToApply }, () => chrome.runtime.lastError);
   }
 }
 
 // Load saved styles and update UI
 function loadStyles() {
   chrome.storage.local.get("styles", (data) => {
-    const host = currentTab.url.match(/:\/\/(.[^\/]+)/)[1];
+    const host = getHost();
     if (data && data.styles) {
       if (data.styles.domain_styles && data.styles.domain_styles[host]) {
         siteStyle = data.styles.domain_styles[host];
@@ -112,14 +208,15 @@ function updateUI(style) {
 
   // Font weight
   const wtChk = $("#font_weight_chk");
-  const wtSel = $("#font_weight");
+  const wtInp = $("#font_weight");
   if (style.font_weight) {
     wtChk.checked = true;
-    wtSel.disabled = false;
-    wtSel.value = style.font_weight;
+    wtInp.disabled = false;
+    wtInp.value = style.font_weight;
   } else {
     wtChk.checked = false;
-    wtSel.disabled = true;
+    wtInp.disabled = true;
+    wtInp.value = "";
   }
 
   // Font size
@@ -201,23 +298,27 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Font family select
-  $("#font_family").addEventListener("change", function () {
+  const onFontFamilyChange = function () {
     const s = activeStyle();
+    $("#font_family_chk").checked = true;
+    this.disabled = false;
     const opt = this.options[this.selectedIndex];
     s.font_family = { name: this.value, type: opt ? opt.dataset.type : "standard" };
     applyStyle(s);
     save();
-  });
+  };
+  $("#font_family").addEventListener("change", onFontFamilyChange);
+  $("#font_family").addEventListener("input", onFontFamilyChange);
 
   // Font weight checkbox
   $("#font_weight_chk").addEventListener("change", function () {
     const s = activeStyle();
-    const sel = $("#font_weight");
+    const inp = $("#font_weight");
     if (this.checked) {
-      sel.disabled = false;
-      s.font_weight = sel.value;
+      inp.disabled = false;
+      s.font_weight = inp.value || "400";
     } else {
-      sel.disabled = true;
+      inp.disabled = true;
       s.font_weight = null;
     }
     applyStyle(s);
@@ -225,12 +326,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Font weight select
-  $("#font_weight").addEventListener("change", function () {
+  const onFontWeightChange = function () {
     const s = activeStyle();
+    $("#font_weight_chk").checked = true;
+    this.disabled = false;
     s.font_weight = this.value;
     applyStyle(s);
     save();
-  });
+  };
+  $("#font_weight").addEventListener("change", onFontWeightChange);
+  $("#font_weight").addEventListener("input", onFontWeightChange);
 
   // Font size checkbox
   $("#font_size_chk").addEventListener("change", function () {
@@ -250,6 +355,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Font size input
   $("#font_size").addEventListener("input", function () {
     const s = activeStyle();
+    $("#font_size_chk").checked = true;
+    this.disabled = false;
     s.font_size = parseFloat(this.value) || null;
     applyStyle(s);
     save();
@@ -271,12 +378,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Font style select
-  $("#font_style").addEventListener("change", function () {
+  const onFontStyleChange = function () {
     const s = activeStyle();
+    $("#font_style_chk").checked = true;
+    this.disabled = false;
     s.font_style = this.value;
     applyStyle(s);
     save();
-  });
+  };
+  $("#font_style").addEventListener("change", onFontStyleChange);
+  $("#font_style").addEventListener("input", onFontStyleChange);
 
   // Done button
   $(".done").addEventListener("click", () => window.close());

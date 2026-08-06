@@ -14,7 +14,7 @@
         .control-group label { display: block; font-weight: 600; margin-bottom: 3px; font-size: 12px; color: #666; }
         .row { display: flex; align-items: center; gap: 6px; }
         .row input[type="checkbox"] { flex-shrink: 0; }
-        .row select, .row input[type="text"] { flex: 1; padding: 4px 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
+        .row select, .row input[type="text"], .row input[type="number"] { flex: 1; padding: 4px 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
         .row select:disabled, .row input:disabled { opacity: 0.5; background: #eee; }
         .done-cont { margin-top: 12px; text-align: center; }
         .done-cont button { background: #4285f4; color: #fff; border: none; padding: 7px 28px; border-radius: 4px; font-size: 13px; cursor: pointer; }
@@ -45,12 +45,7 @@
             <label>Font Weight</label>
             <div class="row">
                 <input type="checkbox" id="font_weight_chk">
-                <select id="font_weight" disabled>
-                    <option value="normal">Normal</option>
-                    <option value="bold">Bold</option>
-                    <option value="bolder">Bolder</option>
-                    <option value="lighter">Lighter</option>
-                </select>
+                <input type="number" id="font_weight" disabled placeholder="400" min="100" max="900" step="100">
             </div>
         </div>
 
