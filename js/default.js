@@ -103,6 +103,7 @@ const FONTS = [
   { name: "Vazirmatn", type: "google" },
   { name: "El Messiri", type: "google" },
   { name: "Alexandria", type: "google" },
+  { name: "Baloo Bhaijaan 2", type: "google" },
   { name: "Cascadia Code", type: "google" },
 ];
 
