@@ -124,11 +124,25 @@ const FONTS = [
   { name: "Cascadia Code", type: "google" },
 ];
 
+// Preset element groups
+const ELEMENT_GROUPS = {
+  headings: ["h1", "h2", "h3", "h4", "h5", "h6"],
+  body:     ["p", "span", "li", "td", "th", "dd", "dt", "blockquote"],
+  nav:      ["a", "nav", "button", "label"],
+  code:     ["code", "pre", "kbd", "samp", "var"],
+  forms:    ["input", "textarea", "select", "option", "button", "label"],
+};
+
+const DEFAULT_TARGET = () => ({ mode: "all", elements: [] });
+const DEFAULT_EXCLUDE_ICONS = true;
+
 const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
 let currentTab = null;
-let siteStyle = { type: "global", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null };
+let siteStyle = { type: "global", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null, element_target: DEFAULT_TARGET(), exclude_icon_fonts: DEFAULT_EXCLUDE_ICONS };
 let globalStyle = {};
 Object.assign(globalStyle, siteStyle);
+globalStyle.element_target = DEFAULT_TARGET();
 
 // Load Google Fonts stylesheet for preview
 const googleFonts = FONTS.filter((f) => f.type === "google");
@@ -181,8 +195,13 @@ async function loadLocalFonts() {
 // Save styles to storage
 function getHost() {
   if (!currentTab || !currentTab.url) return "default";
-  const match = currentTab.url.match(/:\/\/(.[^\/]+)/);
-  return match ? match[1] : "default";
+  try {
+    const url = new URL(currentTab.url);
+    if (url.protocol === "file:") return "local_file";
+    return url.host || "default";
+  } catch (e) {
+    return "default";
+  }
 }
 
 function save() {
@@ -227,6 +246,9 @@ function loadStyles() {
         globalStyle = data.styles.global_style;
       }
     }
+    // Ensure element_target exists on loaded styles
+    if (!siteStyle.element_target) siteStyle.element_target = DEFAULT_TARGET();
+    if (!globalStyle.element_target) globalStyle.element_target = DEFAULT_TARGET();
     updateUI(siteStyle.type === "custom" ? siteStyle : globalStyle);
     $(".setting-type").value = siteStyle.type || "global";
     $(".setting-name").textContent = siteStyle.type === "custom" ? "Site Font" : "Global Font";
@@ -285,6 +307,43 @@ function updateUI(style) {
     stChk.checked = false;
     stSel.disabled = true;
   }
+
+  // Element targeting
+  const et = style.element_target || DEFAULT_TARGET();
+  $("#target_mode").value = et.mode;
+  const section = $("#target_section");
+  if (et.mode !== "all") {
+    section.classList.add("visible");
+  } else {
+    section.classList.remove("visible");
+  }
+  renderPills(et.elements);
+  updatePresetButtons(et.elements);
+
+  // Exclude icon fonts
+  $("#exclude_icon_fonts").checked = style.exclude_icon_fonts !== false;
+}
+
+// Render tag pills in the pills container
+function renderPills(elements) {
+  const container = $("#tag_pills");
+  container.innerHTML = "";
+  (elements || []).forEach((tag) => {
+    const pill = document.createElement("span");
+    pill.className = "tag-pill";
+    pill.innerHTML = tag + ' <span class="remove-pill" data-tag="' + tag + '">&times;</span>';
+    container.appendChild(pill);
+  });
+}
+
+// Update preset group button active states
+function updatePresetButtons(elements) {
+  const elSet = new Set(elements || []);
+  $$(".preset-btn").forEach((btn) => {
+    const group = ELEMENT_GROUPS[btn.dataset.group];
+    const allPresent = group.every((el) => elSet.has(el));
+    btn.classList.toggle("active", allPresent);
+  });
 }
 
 // Get the active style object
@@ -299,7 +358,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     currentTab = tabs[0];
-    $(".domain").textContent = currentTab.url.match(/:\/\/(.[^\/]+)/)[1];
+    try {
+      const url = new URL(currentTab.url);
+      $(".domain").textContent = url.protocol === "file:" ? "Local File" : (url.host || "Local File");
+    } catch (e) {
+      $(".domain").textContent = "Site Font";
+    }
     loadStyles();
   });
 
@@ -317,10 +381,92 @@ document.addEventListener("DOMContentLoaded", () => {
       updateUI(siteStyle);
       applyStyle(siteStyle);
     } else {
-      siteStyle = { type: "custom", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null };
+      siteStyle = { type: "custom", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null, element_target: DEFAULT_TARGET(), exclude_icon_fonts: DEFAULT_EXCLUDE_ICONS };
       $(".well").style.display = "none";
       applyStyle({});
     }
+    save();
+  });
+
+  // Element target mode change
+  $("#target_mode").addEventListener("change", function () {
+    const s = activeStyle();
+    if (!s.element_target) s.element_target = DEFAULT_TARGET();
+    s.element_target.mode = this.value;
+    const section = $("#target_section");
+    if (this.value !== "all") {
+      section.classList.add("visible");
+    } else {
+      section.classList.remove("visible");
+    }
+    applyStyle(s);
+    save();
+  });
+
+  // Exclude icon fonts checkbox
+  $("#exclude_icon_fonts").addEventListener("change", function () {
+    const s = activeStyle();
+    s.exclude_icon_fonts = this.checked;
+    applyStyle(s);
+    save();
+  });
+
+  // Preset group buttons
+  $$(".preset-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const s = activeStyle();
+      if (!s.element_target) s.element_target = DEFAULT_TARGET();
+      const group = ELEMENT_GROUPS[this.dataset.group];
+      const elSet = new Set(s.element_target.elements);
+      const allPresent = group.every((el) => elSet.has(el));
+      if (allPresent) {
+        // Remove all group elements
+        group.forEach((el) => elSet.delete(el));
+      } else {
+        // Add all group elements
+        group.forEach((el) => elSet.add(el));
+      }
+      s.element_target.elements = [...elSet];
+      renderPills(s.element_target.elements);
+      updatePresetButtons(s.element_target.elements);
+      applyStyle(s);
+      save();
+    });
+  });
+
+  // Manual element add
+  function addManualElement() {
+    const inp = $("#manual_element");
+    const val = inp.value.trim().toLowerCase();
+    if (!val) return;
+    const s = activeStyle();
+    if (!s.element_target) s.element_target = DEFAULT_TARGET();
+    const elSet = new Set(s.element_target.elements);
+    // Support comma-separated entries
+    val.split(",").forEach((v) => {
+      const tag = v.trim();
+      if (tag) elSet.add(tag);
+    });
+    s.element_target.elements = [...elSet];
+    inp.value = "";
+    renderPills(s.element_target.elements);
+    updatePresetButtons(s.element_target.elements);
+    applyStyle(s);
+    save();
+  }
+  $("#add_element").addEventListener("click", addManualElement);
+  $("#manual_element").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); addManualElement(); } });
+
+  // Remove pill via event delegation
+  $("#tag_pills").addEventListener("click", function (e) {
+    if (!e.target.classList.contains("remove-pill")) return;
+    const tag = e.target.dataset.tag;
+    const s = activeStyle();
+    if (!s.element_target) return;
+    s.element_target.elements = s.element_target.elements.filter((el) => el !== tag);
+    renderPills(s.element_target.elements);
+    updatePresetButtons(s.element_target.elements);
+    applyStyle(s);
     save();
   });
 
