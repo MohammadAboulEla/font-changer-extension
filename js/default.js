@@ -4,11 +4,28 @@
 // ============================================================
 const FONTS = [
   // System fonts
+  { name: "system-ui", type: "standard" },
   { name: "Arial", type: "standard" },
-  { name: "Verdana", type: "standard" },
-  { name: "Georgia", type: "standard" },
-  { name: "Times New Roman", type: "standard" },
+  { name: "Calibri", type: "standard" },
+  { name: "Comic Sans MS", type: "standard" },
+  { name: "Consolas", type: "standard" },
   { name: "Courier New", type: "standard" },
+  { name: "Georgia", type: "standard" },
+  { name: "Helvetica", type: "standard" },
+  { name: "Impact", type: "standard" },
+  { name: "Lucida Console", type: "standard" },
+  { name: "Monaco", type: "standard" },
+  { name: "Palatino", type: "standard" },
+  { name: "Segoe UI", type: "standard" },
+  { name: "Tahoma", type: "standard" },
+  { name: "Times New Roman", type: "standard" },
+  { name: "Trebuchet MS", type: "standard" },
+  { name: "Verdana", type: "standard" },
+  { name: "sans-serif", type: "standard" },
+  { name: "serif", type: "standard" },
+  { name: "monospace", type: "standard" },
+  { name: "cursive", type: "standard" },
+  { name: "fantasy", type: "standard" },
   // Google Fonts
   { name: "DM Sans", type: "google" },
   { name: "Inter", type: "google" },
@@ -125,6 +142,7 @@ if (googleFonts.length) {
 // Populate font select
 function populateFonts() {
   const sel = $("#font_family");
+  const currentVal = sel.value;
   sel.innerHTML = '';
   const sortedFonts = [...FONTS].sort((a, b) => a.name.localeCompare(b.name));
   sortedFonts.forEach((f) => {
@@ -135,6 +153,29 @@ function populateFonts() {
     opt.style.fontFamily = f.name;
     sel.appendChild(opt);
   });
+  if (currentVal) sel.value = currentVal;
+}
+
+// Query local system fonts if supported
+async function loadLocalFonts() {
+  if ('queryLocalFonts' in window) {
+    try {
+      const localFonts = await window.queryLocalFonts();
+      const existingNames = new Set(FONTS.map((f) => f.name.toLowerCase()));
+      let added = false;
+      for (const font of localFonts) {
+        if (!existingNames.has(font.family.toLowerCase())) {
+          existingNames.add(font.family.toLowerCase());
+          FONTS.push({ name: font.family, type: "standard" });
+          added = true;
+        }
+      }
+      if (added) {
+        populateFonts();
+        loadStyles();
+      }
+    } catch (e) {}
+  }
 }
 
 // Save styles to storage
@@ -254,6 +295,7 @@ function activeStyle() {
 // Init
 document.addEventListener("DOMContentLoaded", () => {
   populateFonts();
+  loadLocalFonts();
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     currentTab = tabs[0];

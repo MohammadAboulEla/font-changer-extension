@@ -103,7 +103,9 @@ var updateStyle = function (a) {
           ");} ";
         b = d + b;
       }
-      b += "font-family: '" + a[c].name + "' !important;";
+      var fam = a[c].name;
+      var isGeneric = ["system-ui", "sans-serif", "serif", "monospace", "cursive", "fantasy"].indexOf(fam) !== -1;
+      b += "font-family: " + (isGeneric ? fam : "'" + fam + "'") + " !important;";
     } else
       "font_size" == c &&
         a[c] &&
