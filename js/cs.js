@@ -193,7 +193,7 @@ var updateStyle = function (a) {
     excludeList.push("html");
     excludeList.push("body");
     for (var k = 0; k < et.elements.length; k++) {
-      var elem = et.elements[k].trim();
+      var elem = et.elements[k].trim().replace(/^["']+|["']+$/g, "");
       if (elem) {
         excludeList.push(elem);
         excludeList.push(elem + " *");
@@ -215,7 +215,7 @@ var updateStyle = function (a) {
     var includeList = [];
     if (et.elements && et.elements.length) {
       for (var j = 0; j < et.elements.length; j++) {
-        var inc = et.elements[j].trim();
+        var inc = et.elements[j].trim().replace(/^["']+|["']+$/g, "");
         if (inc) {
           includeList.push(inc);
           includeList.push(inc + " *");

@@ -331,7 +331,12 @@ function renderPills(elements) {
   (elements || []).forEach((tag) => {
     const pill = document.createElement("span");
     pill.className = "tag-pill";
-    pill.innerHTML = tag + ' <span class="remove-pill" data-tag="' + tag + '">&times;</span>';
+    pill.appendChild(document.createTextNode(tag + " "));
+    const removeBtn = document.createElement("span");
+    removeBtn.className = "remove-pill";
+    removeBtn.textContent = "\u00D7";
+    removeBtn.dataset.tag = tag;
+    pill.appendChild(removeBtn);
     container.appendChild(pill);
   });
 }
@@ -444,7 +449,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const elSet = new Set(s.element_target.elements);
     // Support comma-separated entries
     val.split(",").forEach((v) => {
-      const tag = v.trim();
+      let tag = v.trim();
+      tag = tag.replace(/^["']+|["']+$/g, "").trim();
       if (tag) elSet.add(tag);
     });
     s.element_target.elements = [...elSet];
