@@ -57,9 +57,117 @@ var currentStyle = {
   font_style: null,
   font_family: { name: null, type: !1 },
   font_size: null,
+  font_scale: null,
   element_target: { mode: "all", elements: [] },
   exclude_icon_fonts: true,
 };
+
+var IGNORED_TAGS = {
+  SCRIPT: 1, STYLE: 1, LINK: 1, META: 1, NOSCRIPT: 1,
+  HEAD: 1, TITLE: 1, TEMPLATE: 1, BR: 1, HR: 1,
+  SVG: 1, PATH: 1, CANVAS: 1, VIDEO: 1, AUDIO: 1,
+  IMG: 1, IFRAME: 1
+};
+
+function shouldScaleElement(el, targetConfig, excludeIconFonts) {
+  if (!el || el.nodeType !== 1) return false;
+  if (IGNORED_TAGS[el.tagName]) return false;
+
+  if (excludeIconFonts !== false) {
+    for (var i = 0; i < ICON_FONT_SELECTORS.length; i++) {
+      try {
+        if (el.matches(ICON_FONT_SELECTORS[i])) return false;
+      } catch (e) {}
+    }
+  }
+
+  if (targetConfig) {
+    if (targetConfig.mode === "exclude" && targetConfig.elements && targetConfig.elements.length) {
+      var tag = el.tagName.toLowerCase();
+      if (tag === "html" || tag === "body") return false;
+      for (var k = 0; k < targetConfig.elements.length; k++) {
+        var sel = targetConfig.elements[k].trim().replace(/^["']+|["']+$/g, "");
+        if (sel) {
+          try {
+            if (el.matches(sel) || el.closest(sel)) return false;
+          } catch (e) {}
+        }
+      }
+    } else if (targetConfig.mode === "include") {
+      if (!targetConfig.elements || !targetConfig.elements.length) return false;
+      var matched = false;
+      for (var j = 0; j < targetConfig.elements.length; j++) {
+        var inc = targetConfig.elements[j].trim().replace(/^["']+|["']+$/g, "");
+        if (inc) {
+          try {
+            if (el.matches(inc) || el.closest(inc)) {
+              matched = true;
+              break;
+            }
+          } catch (e) {}
+        }
+      }
+      if (!matched) return false;
+    }
+  }
+
+  return true;
+}
+
+function scaleElement(el, scale, targetConfig, excludeIconFonts) {
+  if (!shouldScaleElement(el, targetConfig, excludeIconFonts)) {
+    if (el.dataset && el.dataset.fontChangerOrigSize) {
+      restoreElementScale(el);
+    }
+    return;
+  }
+
+  if (!el.dataset.fontChangerOrigSize) {
+    var comp = window.getComputedStyle(el).fontSize;
+    var parsed = parseFloat(comp);
+    if (!parsed || isNaN(parsed)) return;
+    el.dataset.fontChangerOrigSize = parsed;
+    if (el.style.fontSize) {
+      el.dataset.fontChangerOrigInline = el.style.fontSize;
+    }
+  }
+
+  var orig = parseFloat(el.dataset.fontChangerOrigSize);
+  if (orig && !isNaN(orig)) {
+    var newSize = (orig * scale).toFixed(2);
+    el.style.setProperty("font-size", newSize + "px", "important");
+  }
+}
+
+function restoreElementScale(el) {
+  if (el.dataset && el.dataset.fontChangerOrigSize) {
+    if (el.dataset.fontChangerOrigInline) {
+      el.style.fontSize = el.dataset.fontChangerOrigInline;
+    } else {
+      el.style.removeProperty("font-size");
+    }
+    delete el.dataset.fontChangerOrigSize;
+    delete el.dataset.fontChangerOrigInline;
+  }
+}
+
+function applyFontScale(scale, targetConfig, excludeIconFonts) {
+  if (!scale || scale <= 0) {
+    clearFontScale();
+    return;
+  }
+  var elements = document.querySelectorAll("*");
+  for (var i = 0; i < elements.length; i++) {
+    scaleElement(elements[i], scale, targetConfig, excludeIconFonts);
+  }
+}
+
+function clearFontScale() {
+  var elements = document.querySelectorAll("[data-font-changer-orig-size]");
+  for (var i = 0; i < elements.length; i++) {
+    restoreElementScale(elements[i]);
+  }
+}
 
 var style = document.createElement("style");
 style.type = "text/css";
@@ -82,13 +190,27 @@ function injectElements() {
   }
 }
 
-// MutationObserver: re-inject if our elements get removed or head is replaced
+// MutationObserver: re-inject if our elements get removed or head is replaced, and handle dynamic font scaling
 var observer = new MutationObserver(function (mutations) {
+  if (currentStyle && currentStyle.font_scale && !currentStyle.font_size) {
+    for (var m = 0; m < mutations.length; m++) {
+      var added = mutations[m].addedNodes;
+      for (var n = 0; n < added.length; n++) {
+        if (added[n].nodeType === 1) {
+          scaleElement(added[n], currentStyle.font_scale, currentStyle.element_target, currentStyle.exclude_icon_fonts);
+          var children = added[n].querySelectorAll("*");
+          for (var k = 0; k < children.length; k++) {
+            scaleElement(children[k], currentStyle.font_scale, currentStyle.element_target, currentStyle.exclude_icon_fonts);
+          }
+        }
+      }
+    }
+  }
+
   if (!hasActiveStyle) return;
   for (var i = 0; i < mutations.length; i++) {
     var removed = mutations[i].removedNodes;
     for (var j = 0; j < removed.length; j++) {
-      // Re-inject if our style/link was removed, or if head itself was replaced
       if (
         removed[j] === style ||
         removed[j] === wf ||
@@ -107,6 +229,9 @@ observer.observe(document.documentElement, { childList: true, subtree: true });
 // Also re-inject when the DOM is fully ready, in case SPA frameworks rebuild the page
 document.addEventListener("DOMContentLoaded", function () {
   if (hasActiveStyle) injectElements();
+  if (currentStyle && currentStyle.font_scale && !currentStyle.font_size) {
+    applyFontScale(currentStyle.font_scale, currentStyle.element_target, currentStyle.exclude_icon_fonts);
+  }
   // Re-observe in case documentElement was swapped
   observer.observe(document.documentElement, { childList: true, subtree: true });
 });
@@ -177,6 +302,12 @@ var updateStyle = function (a) {
   if (a.font_size) {
     props += "font-size:" + a.font_size + "px !important;";
     props += "line-height: normal !important;";
+  }
+
+  if (a.font_scale && !a.font_size) {
+    applyFontScale(a.font_scale, a.element_target, a.exclude_icon_fonts);
+  } else {
+    clearFontScale();
   }
 
   if (!props) {

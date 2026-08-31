@@ -139,7 +139,7 @@ const DEFAULT_EXCLUDE_ICONS = true;
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 let currentTab = null;
-let siteStyle = { type: "global", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null, element_target: DEFAULT_TARGET(), exclude_icon_fonts: DEFAULT_EXCLUDE_ICONS };
+let siteStyle = { type: "global", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null, font_scale: null, element_target: DEFAULT_TARGET(), exclude_icon_fonts: DEFAULT_EXCLUDE_ICONS };
 let globalStyle = {};
 Object.assign(globalStyle, siteStyle);
 globalStyle.element_target = DEFAULT_TARGET();
@@ -296,6 +296,19 @@ function updateUI(style) {
     szInp.value = "";
   }
 
+  // Font scale
+  const scChk = $("#font_scale_chk");
+  const scInp = $("#font_scale");
+  if (style.font_scale) {
+    scChk.checked = true;
+    scInp.disabled = false;
+    scInp.value = style.font_scale;
+  } else {
+    scChk.checked = false;
+    scInp.disabled = true;
+    scInp.value = "";
+  }
+
   // Font style
   const stChk = $("#font_style_chk");
   const stSel = $("#font_style");
@@ -386,7 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateUI(siteStyle);
       applyStyle(siteStyle);
     } else {
-      siteStyle = { type: "custom", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null, element_target: DEFAULT_TARGET(), exclude_icon_fonts: DEFAULT_EXCLUDE_ICONS };
+      siteStyle = { type: "custom", font_family: { name: null, type: null }, font_style: null, font_weight: null, font_size: null, font_scale: null, element_target: DEFAULT_TARGET(), exclude_icon_fonts: DEFAULT_EXCLUDE_ICONS };
       $(".well").style.display = "none";
       applyStyle({});
     }
@@ -539,6 +552,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (this.checked) {
       inp.disabled = false;
       s.font_size = parseFloat(inp.value) || null;
+      $("#font_scale_chk").checked = false;
+      $("#font_scale").disabled = true;
+      s.font_scale = null;
     } else {
       inp.disabled = true;
       s.font_size = null;
@@ -553,9 +569,50 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#font_size_chk").checked = true;
     this.disabled = false;
     s.font_size = parseFloat(this.value) || null;
+    if (s.font_size) {
+      $("#font_scale_chk").checked = false;
+      $("#font_scale").disabled = true;
+      s.font_scale = null;
+    }
     applyStyle(s);
     save();
   });
+
+  // Font scale checkbox
+  $("#font_scale_chk").addEventListener("change", function () {
+    const s = activeStyle();
+    const inp = $("#font_scale");
+    if (this.checked) {
+      inp.disabled = false;
+      if (!inp.value) inp.value = "1.2";
+      s.font_scale = parseFloat(inp.value) || 1.2;
+      $("#font_size_chk").checked = false;
+      $("#font_size").disabled = true;
+      s.font_size = null;
+    } else {
+      inp.disabled = true;
+      s.font_scale = null;
+    }
+    applyStyle(s);
+    save();
+  });
+
+  // Font scale input
+  const onFontScaleChange = function () {
+    const s = activeStyle();
+    $("#font_scale_chk").checked = true;
+    this.disabled = false;
+    s.font_scale = parseFloat(this.value) || null;
+    if (s.font_scale) {
+      $("#font_size_chk").checked = false;
+      $("#font_size").disabled = true;
+      s.font_size = null;
+    }
+    applyStyle(s);
+    save();
+  };
+  $("#font_scale").addEventListener("change", onFontScaleChange);
+  $("#font_scale").addEventListener("input", onFontScaleChange);
 
   // Font style checkbox
   $("#font_style_chk").addEventListener("change", function () {
