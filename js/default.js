@@ -121,6 +121,9 @@ const FONTS = [
   { name: "El Messiri", type: "google" },
   { name: "Alexandria", type: "google" },
   { name: "Baloo Bhaijaan 2", type: "google" },
+  { name: "Alan Sans", type: "google" },
+  { name: "Alyamama", type: "google" },
+  { name: "Zain", type: "google" },
   { name: "Cascadia Code", type: "google" },
 ];
 
